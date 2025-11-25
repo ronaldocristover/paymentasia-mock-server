@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paymentasia-mock-server
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:password@db:5432/paymentasia_mock
+      API_KEY: ${API_KEY:-your-admin-api-key-change-this}
+      DEFAULT_MERCHANT_TOKEN: ${DEFAULT_MERCHANT_TOKEN:-ae476881-7bfc-4da8-bc7d-8203ad0fb28c}
+      DEFAULT_SIGNATURE_SECRET: ${DEFAULT_SIGNATURE_SECRET:-127f7830-b856-4ddf-92b4-a6478e38547b}
+      DEFAULT_PAYMENT_OUTCOME: ${DEFAULT_PAYMENT_OUTCOME:-SUCCESS}
+      CALLBACK_DELAY_MS: ${CALLBACK_DELAY_MS:-3000}
+      PROCESSING_DELAY_MS: ${PROCESSING_DELAY_MS:-1000}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - paymentasia-network
+
+  db:
+    image: postgres:15-alpine
+    container_name: paymentasia-db
+    environment:
+      POSTGRES_DB: paymentasia_mock
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - paymentasia-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  paymentasia-network:
+    driver: bridge
+

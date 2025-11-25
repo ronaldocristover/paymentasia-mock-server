@@ -1,0 +1,47 @@
+meta {
+  name: List Transactions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/transactions?page=1&limit=20
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+params:query {
+  page: 1
+  limit: 20
+}
+
+docs {
+  # List All Transactions
+  
+  Get all transactions with pagination (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+  
+  **Query Parameters:**
+  - page: Page number (default: 1)
+  - limit: Items per page (default: 20)
+  
+  **Response:**
+  - Array of transactions with merchant details
+  - Pagination information
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("should have pagination", function() {
+    expect(res.body.pagination).to.be.an('object');
+  });
+}
+

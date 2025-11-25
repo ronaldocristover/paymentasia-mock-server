@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id              String        @id @default(uuid())
+  merchantToken   String        @unique @map("merchant_token")
+  signatureSecret String        @map("signature_secret")
+  name            String
+  active          Boolean       @default(true)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  transactions    Transaction[]
+
+  @@map("merchants")
+}
+
+model Transaction {
+  id                 String    @id @default(uuid())
+  merchantReference  String    @map("merchant_reference")
+  requestReference   String    @unique @default(uuid()) @map("request_reference")
+  merchantId         String    @map("merchant_id")
+  type               String    @default("Sale") // Sale or Refund
+  status             String    @default("0") // 0=PENDING, 1=SUCCESS, 2=FAIL, 4=PROCESSING
+  currency           String
+  amount             Decimal   @db.Decimal(24, 6)
+  network            String
+  subject            String
+  
+  // Customer details
+  customerIp         String    @map("customer_ip")
+  customerFirstName  String    @map("customer_first_name")
+  customerLastName   String    @map("customer_last_name")
+  customerEmail      String    @map("customer_email")
+  customerPhone      String    @map("customer_phone")
+  customerAddress    String?   @map("customer_address")
+  customerState      String?   @map("customer_state")
+  customerCountry    String?   @map("customer_country")
+  customerPostalCode String?   @map("customer_postal_code")
+  
+  // URLs
+  notifyUrl          String    @map("notify_url")
+  returnUrl          String?   @map("return_url")
+  
+  // Callback tracking
+  callbackSent       Boolean   @default(false) @map("callback_sent")
+  callbackAttempts   Int       @default(0) @map("callback_attempts")
+  lastCallbackAt     DateTime? @map("last_callback_at")
+  
+  // Timestamps
+  createdTime        DateTime  @default(now()) @map("created_time")
+  completedTime      DateTime? @map("completed_time")
+  
+  merchant           Merchant  @relation(fields: [merchantId], references: [id])
+  
+  @@index([merchantReference])
+  @@index([requestReference])
+  @@map("transactions")
+}
+

@@ -1,0 +1,31 @@
+meta {
+  name: Trigger Callback
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/admin/callbacks/{{transactionId}}/trigger
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+docs {
+  # Manually Trigger Callback
+  
+  Manually trigger a callback for a specific transaction (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+  
+  **Path Parameters:**
+  - transactionId: Transaction UUID
+  
+  **Use Case:**
+  - Retry failed callbacks
+  - Test webhook endpoints
+}
+

@@ -1,0 +1,79 @@
+meta {
+  name: Create Payment CreditCard
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/app/page/{{merchantToken}}
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  merchant_reference: TEST-CC-{{timestamp}}
+  currency: USD
+  amount: 50.00
+  customer_ip: 123.123.123.123
+  customer_first_name: Jane
+  customer_last_name: Smith
+  customer_phone: 5551234567
+  customer_email: jane@example.com
+  customer_address: 123 Main Street
+  customer_state: CA
+  customer_country: US
+  customer_postal_code: 90210
+  network: CreditCard
+  subject: Test Credit Card Payment
+  notify_url: https://webhook.site/your-webhook-id
+  return_url: https://example.com/return
+  sign: {{signature}}
+}
+
+script:pre-request {
+  const crypto = require('crypto');
+  const querystring = require('querystring');
+  
+  const timestamp = Date.now();
+  bru.setVar('timestamp', timestamp);
+  
+  const fields = {
+    amount: '50.00',
+    currency: 'USD',
+    customer_address: '123 Main Street',
+    customer_country: 'US',
+    customer_email: 'jane@example.com',
+    customer_first_name: 'Jane',
+    customer_ip: '123.123.123.123',
+    customer_last_name: 'Smith',
+    customer_phone: '5551234567',
+    customer_postal_code: '90210',
+    customer_state: 'CA',
+    merchant_reference: `TEST-CC-${timestamp}`,
+    network: 'CreditCard',
+    notify_url: 'https://webhook.site/your-webhook-id',
+    return_url: 'https://example.com/return',
+    subject: 'Test Credit Card Payment'
+  };
+  
+  const queryString = querystring.stringify(fields);
+  const secret = bru.getEnvVar('signatureSecret');
+  const signatureString = queryString + secret;
+  const signature = crypto.createHash('sha512').update(signatureString).digest('hex');
+  
+  bru.setVar('signature', signature);
+}
+
+docs {
+  # Create Payment - Credit Card
+  
+  Initiate a payment request using Credit Card payment method.
+  
+  **Additional Requirements for Credit Card:**
+  - customer_address (required)
+  - customer_state (required for US/Canada)
+  - customer_country (required)
+  - customer_postal_code (required)
+  - Supports HKD and USD currencies
+}
+

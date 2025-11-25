@@ -1,0 +1,69 @@
+meta {
+  name: Query Transaction
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/{{merchantToken}}/payment/query
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  merchant_reference: {{merchantRef}}
+  sign: {{signature}}
+}
+
+script:pre-request {
+  const crypto = require('crypto');
+  const querystring = require('querystring');
+  
+  // Use a merchant reference (update this with actual reference)
+  const merchantRef = bru.getVar('merchantRef') || 'TEST-1234567890';
+  bru.setVar('merchantRef', merchantRef);
+  
+  const fields = {
+    merchant_reference: merchantRef
+  };
+  
+  const queryString = querystring.stringify(fields);
+  const secret = bru.getEnvVar('signatureSecret');
+  const signatureString = queryString + secret;
+  const signature = crypto.createHash('sha512').update(signatureString).digest('hex');
+  
+  bru.setVar('signature', signature);
+}
+
+docs {
+  # Query Transaction
+  
+  Query transaction status by merchant reference.
+  
+  **Endpoint:** `POST /{merchantToken}/payment/query`
+  
+  **Required Fields:**
+  - merchant_reference: Your transaction reference
+  - sign: SHA-512 signature
+  
+  **Response:**
+  - JSON array of transactions (Sales and Refunds)
+  - Empty array if no transactions found
+  
+  **Response Fields:**
+  - type: 'Sale' or 'Refund'
+  - merchant_reference: Your reference
+  - request_reference: Gateway reference
+  - status: '0' (PENDING), '1' (SUCCESS), '2' (FAIL), '4' (PROCESSING)
+  - currency: Currency code
+  - amount: Amount with 6 decimal places
+  - created_time: Unix timestamp
+  - completed_time: Unix timestamp or null
+}
+
+tests {
+  test("should return array", function() {
+    expect(Array.isArray(res.body)).to.be.true;
+  });
+}
+

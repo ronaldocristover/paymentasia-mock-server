@@ -1,0 +1,55 @@
+meta {
+  name: Configure Scenario
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/admin/scenarios
+  body: json
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "defaultOutcome": "SUCCESS",
+    "callbackDelay": 3000,
+    "processingDelay": 1000,
+    "rules": [
+      {
+        "condition": "amount_ends_with",
+        "value": ".99",
+        "outcome": "FAIL"
+      }
+    ]
+  }
+}
+
+docs {
+  # Configure Payment Scenario
+  
+  Configure how the mock server should handle payment outcomes (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+  
+  **Request Body:**
+  - defaultOutcome: 'SUCCESS', 'FAIL', or 'RANDOM'
+  - callbackDelay: Delay in ms before sending callback
+  - processingDelay: Delay in ms before moving to processing
+  - rules: Array of conditional rules
+  
+  **Rule Conditions:**
+  - amount_ends_with: Match amount ending
+  - amount_equals: Exact amount match
+  - network: Match payment network
+  
+  **Example Rules:**
+  - Amounts ending in .99 will fail
+  - Specific networks can be configured
+}
+

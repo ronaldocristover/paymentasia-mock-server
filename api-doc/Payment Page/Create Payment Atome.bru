@@ -1,0 +1,77 @@
+meta {
+  name: Create Payment Atome
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/app/page/{{merchantToken}}
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  merchant_reference: TEST-ATOME-{{timestamp}}
+  currency: HKD
+  amount: 50.00
+  customer_ip: 123.123.123.123
+  customer_first_name: Alice
+  customer_last_name: Wong
+  customer_phone: 85212345678
+  customer_email: alice@example.com
+  customer_address: Flat A, 1/F, Building 1
+  customer_country: HK
+  customer_postal_code: 000000
+  network: Atome
+  subject: Test Atome Payment
+  notify_url: https://webhook.site/your-webhook-id
+  return_url: https://example.com/return
+  sign: {{signature}}
+}
+
+script:pre-request {
+  const crypto = require('crypto');
+  const querystring = require('querystring');
+  
+  const timestamp = Date.now();
+  bru.setVar('timestamp', timestamp);
+  
+  const fields = {
+    amount: '50.00',
+    currency: 'HKD',
+    customer_address: 'Flat A, 1/F, Building 1',
+    customer_country: 'HK',
+    customer_email: 'alice@example.com',
+    customer_first_name: 'Alice',
+    customer_ip: '123.123.123.123',
+    customer_last_name: 'Wong',
+    customer_phone: '85212345678',
+    customer_postal_code: '000000',
+    merchant_reference: `TEST-ATOME-${timestamp}`,
+    network: 'Atome',
+    notify_url: 'https://webhook.site/your-webhook-id',
+    return_url: 'https://example.com/return',
+    subject: 'Test Atome Payment'
+  };
+  
+  const queryString = querystring.stringify(fields);
+  const secret = bru.getEnvVar('signatureSecret');
+  const signatureString = queryString + secret;
+  const signature = crypto.createHash('sha512').update(signatureString).digest('hex');
+  
+  bru.setVar('signature', signature);
+}
+
+docs {
+  # Create Payment - Atome
+  
+  Initiate a payment request using Atome (Buy Now Pay Later).
+  
+  **Atome Requirements:**
+  - Minimum amount: 30.00 HKD
+  - customer_address (required)
+  - customer_country (required)
+  - customer_postal_code (required)
+  - Only supports HKD currency
+}
+

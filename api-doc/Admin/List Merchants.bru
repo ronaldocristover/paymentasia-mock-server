@@ -1,0 +1,24 @@
+meta {
+  name: List Merchants
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/admin/merchants
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+docs {
+  # List All Merchants
+  
+  Get all merchants with transaction counts (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+}
+

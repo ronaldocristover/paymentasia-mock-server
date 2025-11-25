@@ -1,0 +1,24 @@
+meta {
+  name: Get Scenarios
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/admin/scenarios
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+docs {
+  # Get Current Scenario Configuration
+  
+  Get the current scenario configuration (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+}
+

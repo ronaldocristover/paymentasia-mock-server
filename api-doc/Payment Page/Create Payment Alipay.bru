@@ -1,0 +1,85 @@
+meta {
+  name: Create Payment Alipay
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/app/page/{{merchantToken}}
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  merchant_reference: TEST-{{timestamp}}
+  currency: HKD
+  amount: 100.00
+  customer_ip: 123.123.123.123
+  customer_first_name: John
+  customer_last_name: Doe
+  customer_phone: 0123123123
+  customer_email: test@example.com
+  network: Alipay
+  subject: Test Payment
+  notify_url: https://webhook.site/your-webhook-id
+  return_url: https://example.com/return
+  sign: {{signature}}
+}
+
+script:pre-request {
+  const crypto = require('crypto');
+  const querystring = require('querystring');
+  
+  // Get current timestamp
+  const timestamp = Date.now();
+  bru.setVar('timestamp', timestamp);
+  
+  // Prepare fields for signature (alphabetically sorted)
+  const fields = {
+    amount: '100.00',
+    currency: 'HKD',
+    customer_email: 'test@example.com',
+    customer_first_name: 'John',
+    customer_ip: '123.123.123.123',
+    customer_last_name: 'Doe',
+    customer_phone: '0123123123',
+    merchant_reference: `TEST-${timestamp}`,
+    network: 'Alipay',
+    notify_url: 'https://webhook.site/your-webhook-id',
+    return_url: 'https://example.com/return',
+    subject: 'Test Payment'
+  };
+  
+  // Build query string
+  const queryString = querystring.stringify(fields);
+  
+  // Append secret and generate SHA-512
+  const secret = bru.getEnvVar('signatureSecret');
+  const signatureString = queryString + secret;
+  const signature = crypto.createHash('sha512').update(signatureString).digest('hex');
+  
+  bru.setVar('signature', signature);
+}
+
+docs {
+  # Create Payment - Alipay
+  
+  Initiate a payment request using Alipay payment method.
+  
+  **Endpoint:** `POST /app/page/{merchantToken}`
+  
+  **Required Fields:**
+  - merchant_reference: Unique transaction reference
+  - currency: HKD (for Alipay)
+  - amount: Amount in format XX.XX
+  - customer details (ip, name, email, phone)
+  - network: Alipay
+  - subject: Payment description
+  - notify_url: Callback URL for payment notification
+  - sign: SHA-512 signature
+  
+  **Response:**
+  - Redirects to return_url with payment result
+  - Or returns JSON with transaction details
+}
+

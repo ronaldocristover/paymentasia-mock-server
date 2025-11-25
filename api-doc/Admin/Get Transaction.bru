@@ -1,0 +1,27 @@
+meta {
+  name: Get Transaction
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/admin/transactions/{{transactionId}}
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+docs {
+  # Get Transaction by ID
+  
+  Get detailed transaction information by ID (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+  
+  **Path Parameters:**
+  - transactionId: Transaction UUID
+}
+

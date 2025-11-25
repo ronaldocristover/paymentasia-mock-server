@@ -1,0 +1,38 @@
+meta {
+  name: Create Merchant
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/admin/merchants
+  body: json
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Test Merchant",
+    "merchantToken": "optional-uuid-here",
+    "signatureSecret": "optional-uuid-here"
+  }
+}
+
+docs {
+  # Create New Merchant
+  
+  Create a new merchant account (Admin only).
+  
+  **Authentication:** Requires X-API-Key header
+  
+  **Request Body:**
+  - name: Merchant name (required)
+  - merchantToken: UUID (optional, auto-generated if not provided)
+  - signatureSecret: UUID (optional, auto-generated if not provided)
+}
+
